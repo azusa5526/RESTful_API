@@ -9,19 +9,18 @@ const connectionPool = mysql.createPool({
   database: config.mysqlDatabase
 });
 
-const createArticle = (insertValues) => {
+const createUser = (insertValues) => {
   return new Promise((resolve, reject) => {
     connectionPool.getConnection((connectionError, connection) => {
       if (connectionError) {
         reject(connectionError);
       } else {
-        connection.query('INSERT INTO Article SET ?', insertValues, (error, result) => {
-          // Article資料表寫入一筆資料
+        connection.query('INSERT INTO User SET ?', insertValues, (error, result) => {
           if (error) {
             console.error('SQL error: ', error);
             reject(error);
           } else if (result.affectedRows === 1) {
-            resolve(`新增成功！ article_id: ${result.insertId}`);
+            resolve(`新增成功 user_id: ${result.insertId}`);
           }
           connection.release();
         });
@@ -30,13 +29,14 @@ const createArticle = (insertValues) => {
   });
 };
 
-const selectArticle = () => {
+// getAllUsers
+const selectUser = () => {
   return new Promise((resolve, reject) => {
     connectionPool.getConnection((connectionError, connection) => {
       if (connectionError) {
         reject(connectionError);
       } else {
-        connection.query(`SELECT * FROM Article`, (error, result) => {
+        connection.query(`SELECT * FROM User`, (error, result) => {
           if (error) {
             console.error('SQL error: ', error);
             reject(error);
@@ -50,22 +50,22 @@ const selectArticle = () => {
   });
 };
 
-const modifyArticle = (insertValues, userId) => {
+const modifyUser = (insertValues, userId) => {
   return new Promise((resolve, reject) => {
     connectionPool.getConnection((connectionError, connection) => {
       if (connectionError) {
         reject(connectionError);
       } else {
         connection.query(
-          'UPDATE Article SET ? WHERE article_id = ?',
+          `UPDATE User SET ? WHERE user_id = ?`,
           [insertValues, userId],
           (error, result) => {
             if (error) {
-              console.error('SQL error: ', error); //寫入資料庫出現問題
+              console.error('SQL error: ', error);
               reject(error);
             } else if (result.affectedRows === 0) {
-              //寫入時發現無該筆資料
-              resolve('找不到此文章Id，請確認修改Id是否正確');
+              // 寫入時發現無該筆資料
+              resolve('找不到此User Id，請確認Id是否正確');
             } else if (result.message.match('Changed: 1')) {
               resolve('資料修改成功');
             } else {
@@ -79,19 +79,19 @@ const modifyArticle = (insertValues, userId) => {
   });
 };
 
-const deleteArticle = (userId) => {
+const deleteUser = (userId) => {
   return new Promise((resolve, reject) => {
     connectionPool.getConnection((connectionError, connection) => {
       if (connectionError) {
         reject(connectionError);
       } else {
-        connection.query('DELETE FROM Article WHERE article_id = ?', userId, (error, result) => {
+        connection.query('DELETE FROM User WHERE user_id = ?', userId, (error, result) => {
           if (error) {
             console.error('SQL error: ', error); //寫入資料庫時發現問題
             reject(error);
           } else if (result.affectedRows === 0) {
             //寫入時發現無該筆資料
-            resolve('找不到此文章Id，請確認待刪除Id是否正確');
+            resolve('找不到此用戶Id，請確認待刪除Id是否正確');
           } else if (result.affectedRows === 1) {
             resolve('刪除成功');
           } else {
@@ -105,8 +105,8 @@ const deleteArticle = (userId) => {
 };
 
 export default {
-  createArticle,
-  selectArticle,
-  modifyArticle,
-  deleteArticle
+  createUser,
+  selectUser,
+  modifyUser,
+  deleteUser
 };
