@@ -1,5 +1,6 @@
 import mysql from 'mysql';
 import config from '../../config/config';
+import bcrypt from 'bcrypt';
 
 const connectionPool = mysql.createPool({
   connectionLimit: 10,
@@ -104,9 +105,43 @@ const deleteUser = (userId) => {
   });
 };
 
+const selectUserLogin = (insertValues) => {
+  return new Promise((resolve, reject) => {
+    connectionPool.getConnection((connectionError, connection) => {
+      if (connectionError) {
+        reject(connectionError);
+      } else {
+        connection.query(
+          'SELECT * FROM User WHERE user_mail = ?',
+          insertValues.user_mail,
+          (error, result) => {
+            if (error) {
+              console.error('SQL error: ', error);
+            } else if (Object.keys(result).length === 0) {
+              resolve('該信箱尚未註冊');
+            } else {
+              const dbHashPassword = result[0].user_password;
+              const userPassword = insertValues.user_password;
+              bcrypt.compare(userPassword, dbHashPassword).then((result) => {
+                if (result) {
+                  resolve('登入成功');
+                } else {
+                  resolve('登入失敗，請檢察帳戶或密碼是否有誤');
+                }
+              });
+            }
+            connection.release();
+          }
+        );
+      }
+    });
+  });
+};
+
 export default {
   createUser,
   selectUser,
   modifyUser,
-  deleteUser
+  deleteUser,
+  selectUserLogin
 };

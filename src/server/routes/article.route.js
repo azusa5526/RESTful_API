@@ -9,7 +9,6 @@ router
   .route('/')
   .get(articleCtrl.articleGet)
   .post(validate(paramValidation.createArticle), articleCtrl.articlePost);
-
 router.route('/:article_id').put(articleCtrl.articlePut).delete(articleCtrl.articleDelete);
 
 export default router;
