@@ -53,7 +53,7 @@ const userDelete = (req, res) => {
     });
 };
 
-const userLogin = (req, res) => {
+const userLogin = (req, res, next) => {
   const insertValues = req.body;
   userModule
     .selectUserLogin(insertValues)
@@ -61,7 +61,7 @@ const userLogin = (req, res) => {
       res.send(result);
     })
     .catch((err) => {
-      return res.send(err);
+      next(err);
     });
 };
 

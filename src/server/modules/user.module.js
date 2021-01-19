@@ -1,6 +1,8 @@
 import mysql from 'mysql';
 import config from '../../config/config';
 import bcrypt from 'bcrypt';
+import APPError from '../helper/AppError';
+import jwt from 'jsonwebtoken';
 
 const connectionPool = mysql.createPool({
   connectionLimit: 10,
@@ -118,15 +120,24 @@ const selectUserLogin = (insertValues) => {
             if (error) {
               console.error('SQL error: ', error);
             } else if (Object.keys(result).length === 0) {
-              resolve('該信箱尚未註冊');
+              reject(new APPError.LoginError1()); // 信箱未註冊
             } else {
               const dbHashPassword = result[0].user_password;
               const userPassword = insertValues.user_password;
-              bcrypt.compare(userPassword, dbHashPassword).then((result) => {
-                if (result) {
-                  resolve('登入成功');
+              bcrypt.compare(userPassword, dbHashPassword).then((res) => {
+                if (res) {
+                  const payload = {
+                    user_id: result[0].user_id,
+                    user_name: result[0].user_name,
+                    user_mail: result[0].user_mail
+                  };
+                  const token = jwt.sign(
+                    { payload, exp: Math.floor(Date.now() / 1000) + 60 * 15 },
+                    'my_secret_key'
+                  );
+                  resolve(Object.assign({ code: 200 }, { message: '登入成功', token })); // 登入成功
                 } else {
-                  resolve('登入失敗，請檢察帳戶或密碼是否有誤');
+                  reject(new APPError.LoginError2()); // 輸入帳戶密碼有誤
                 }
               });
             }
