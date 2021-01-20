@@ -1,5 +1,6 @@
 import mysql from 'mysql';
 import config from '../../config/config';
+import jwt from 'jsonwebtoken';
 
 const connectionPool = mysql.createPool({
   connectionLimit: 10,
@@ -104,9 +105,40 @@ const deleteArticle = (userId) => {
   });
 };
 
+const selectPersonalArticle = (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, 'my_secret_key', (err, decoded) => {
+      if (err) {
+        reject(err);
+      } else {
+        const userId = decoded.payload.user_id;
+        connectionPool.getConnection((connectionError, connection) => {
+          if (connectionError) {
+            reject(connectionError);
+          } else {
+            connection.query(
+              'SELECT * FROM Article WHERE user_id = ?',
+              [userId],
+              (error, result) => {
+                if (error) {
+                  reject(error);
+                } else {
+                  resolve(result);
+                }
+                connection.release();
+              }
+            );
+          }
+        });
+      }
+    });
+  });
+};
+
 export default {
   createArticle,
   selectArticle,
   modifyArticle,
-  deleteArticle
+  deleteArticle,
+  selectPersonalArticle
 };

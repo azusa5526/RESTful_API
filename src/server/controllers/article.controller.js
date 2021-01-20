@@ -48,9 +48,21 @@ const articleDelete = (req, res) => {
     });
 };
 
+const articlePersonalGet = (req, res) => {
+  articleModule
+    .selectPersonalArticle(req.token)
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => {
+      return res.status(401).send(err);
+    });
+};
+
 export default {
   articlePost,
   articleGet,
   articlePut,
-  articleDelete
+  articleDelete,
+  articlePersonalGet
 };
