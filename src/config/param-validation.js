@@ -16,8 +16,8 @@ export default {
       user_name: Joi.string().required(),
       user_mail: Joi.string().email().trim().required(),
       user_password: Joi.string()
-        .regex(/[a-zA-Z0-9]{6,30}$/)
-        .required() // 最小長度6最大30，只允許英文大小寫和數字
+        .regex(/[a-zA-Z0-9]{6,20}$/)
+        .required() // 最小長度6最大20，只允許英文大小寫和數字
     }
   }
 };
